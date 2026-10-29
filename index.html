@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f4e79">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Faturas">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' blob: data:; script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; connect-src 'self' blob: data:; style-src 'self' 'unsafe-inline'">
+<title>Faturas</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="topbar">
+  <button id="btn-back" class="icon-btn" hidden aria-label="Voltar">&lsaquo; Voltar</button>
+  <h1 id="title">Faturas</h1>
+  <button id="btn-about" class="icon-btn" aria-label="Privacidade e definições">Info</button>
+</header>
+
+<main>
+  <!-- ============================ LISTA ============================ -->
+  <section id="view-list" class="view">
+    <div class="capture">
+      <label class="btn primary big" for="in-camera">Fotografar fatura</label>
+      <label class="btn big" for="in-gallery">Importar imagem</label>
+      <input id="in-camera" type="file" accept="image/*" capture="environment" hidden>
+      <input id="in-gallery" type="file" accept="image/*" hidden>
+    </div>
+
+    <div class="filters card">
+      <input id="f-search" type="search" placeholder="Pesquisar fornecedor, NIF ou n.º" autocomplete="off">
+      <div class="row">
+        <label>De <input id="f-from" type="date"></label>
+        <label>Até <input id="f-to" type="date"></label>
+      </div>
+      <div class="row">
+        <select id="f-supplier"><option value="">Todos os fornecedores</option></select>
+        <button id="f-clear" class="btn small">Limpar</button>
+      </div>
+    </div>
+
+    <div class="selbar">
+      <label class="chk"><input id="sel-all" type="checkbox"> Selecionar visíveis</label>
+      <span id="sel-count">0 selecionadas</span>
+    </div>
+    <div class="exportbar">
+      <button id="btn-export-xlsx" class="btn primary" disabled>Exportar Excel (.xlsx)</button>
+      <button id="btn-export-zip" class="btn" disabled>Excel + imagens (.zip)</button>
+    </div>
+
+    <ul id="list" class="list"></ul>
+    <p id="empty" class="muted center" hidden>Ainda não há faturas. Fotografe ou importe uma imagem para começar.</p>
+  </section>
+
+  <!-- ============================ REVISÃO ============================ -->
+  <section id="view-review" class="view" hidden>
+    <div id="progress" class="card progress" hidden>
+      <div id="progress-text">A processar…</div>
+      <div class="bar"><div id="progress-bar"></div></div>
+    </div>
+
+    <div id="review" hidden>
+      <div class="imgbox card">
+        <img id="rv-thumb" alt="Imagem da fatura" title="Tocar para ampliar">
+        <div>
+          <div id="rv-source" class="muted small"></div>
+          <div id="rv-summary" class="small"></div>
+        </div>
+      </div>
+
+      <div id="rv-notes" class="notes"></div>
+
+      <form id="rv-form" class="card form" autocomplete="off" novalidate>
+        <div id="rv-fields"></div>
+
+        <h3>IVA por taxa</h3>
+        <table class="vat">
+          <thead><tr><th>Taxa %</th><th>Base</th><th>IVA</th><th></th></tr></thead>
+          <tbody id="rv-vat"></tbody>
+        </table>
+        <button type="button" id="rv-vat-add" class="btn small">+ Adicionar taxa</button>
+      </form>
+
+      <div id="rv-validation" class="card validation"></div>
+
+      <details class="card">
+        <summary>Colar texto da fatura (alternativa ao OCR)</summary>
+        <p class="small muted">No iPhone pode copiar o texto da fotografia com "Texto ao Vivo" (Fotos &gt; manter premido o texto &gt; Copiar) e colá-lo aqui. Os campos que já editou não são alterados.</p>
+        <textarea id="rv-paste" rows="6" placeholder="Colar aqui o texto da fatura"></textarea>
+        <button type="button" id="rv-paste-run" class="btn small">Extrair do texto colado</button>
+      </details>
+
+      <div class="actions">
+        <button id="rv-save" class="btn primary big">Guardar</button>
+        <button id="rv-cancel" class="btn big">Cancelar</button>
+        <button id="rv-delete" class="btn danger" hidden>Eliminar registo</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ INFO ============================ -->
+  <section id="view-about" class="view" hidden>
+    <div class="card">
+      <h2>Privacidade</h2>
+      <ul class="plain">
+        <li><b>Onde ficam os dados:</b> apenas neste dispositivo, no armazenamento local do browser (IndexedDB) associado a este endereço. Não há contas, servidores nem sincronização.</li>
+        <li><b>Leitura das faturas:</b> o OCR (Tesseract) e a leitura do código QR fiscal correm no próprio telemóvel. As imagens não são enviadas para nenhum serviço externo.</li>
+        <li><b>Dados guardados por fatura:</b> os campos revistos, as taxas de IVA, uma miniatura e a imagem original. O texto bruto do OCR não é guardado.</li>
+        <li><b>Exportação:</b> o ficheiro .xlsx/.zip é gerado no dispositivo e só sai dele se o partilhar.</li>
+        <li><b>Atenção:</b> apagar os dados do site no Safari, ou remover a app do ecrã principal, apaga os registos. Exporte regularmente.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Estado</h2>
+      <div id="about-status" class="small"></div>
+    </div>
+    <div class="card">
+      <h2>Dados</h2>
+      <button id="btn-clear-all" class="btn danger">Apagar todos os dados</button>
+    </div>
+    <p class="muted small center">Faturas MVP v1.0.0 - perfil: Portugal</p>
+  </section>
+</main>
+
+<div id="lightbox" class="lightbox" hidden><img id="lightbox-img" alt="Fatura"></div>
+<div id="toast" class="toast" hidden></div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

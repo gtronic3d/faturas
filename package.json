@@ -1,0 +1,23 @@
+{
+  "name": "faturas-pwa",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MVP: extração e registo de dados de faturas a partir de fotografia (PWA local, offline).",
+  "type": "module",
+  "scripts": {
+    "vendor": "node scripts/vendor.mjs",
+    "start": "node scripts/serve.mjs",
+    "test": "node --test tests/unit/*.test.mjs",
+    "test:ocr": "node --test tests/ocr/*.test.mjs",
+    "test:e2e": "node --test --test-concurrency=1 tests/e2e/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "tesseract.js": "^5.1.1",
+    "tesseract.js-core": "^5.1.1",
+    "jsqr": "^1.4.0"
+  }
+}

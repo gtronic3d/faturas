@@ -1,0 +1,1 @@
+Pasta preenchida por "npm run vendor" (Tesseract.js, modelo por, jsQR).
